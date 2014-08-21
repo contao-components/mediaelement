@@ -1,0 +1,29 @@
+{
+    "name": "contao-components/mediaelement",
+    "type": "component",
+    "description": "MediaElement.js integration for Contao Open Source CMS",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Leo Feyer",
+            "homepage": "https://github.com/leofeyer"
+        }
+    ],
+    "require": {
+        "robloach/component-installer": "~0.0"
+    },
+    "extra": {
+        "component": {
+            "scripts": [
+                "js/*.min.js"
+            ],
+            "styles": [
+                "css/*.min.css"
+            ],
+            "files": [
+                "images/*",
+                "legacy/*"
+            ]
+        }
+    }
+}
