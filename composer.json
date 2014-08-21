@@ -15,10 +15,10 @@
     "extra": {
         "component": {
             "scripts": [
-                "js/*.min.js"
+                "js/mediaelement-and-player.min.js"
             ],
             "styles": [
-                "css/*.min.css"
+                "css/mediaelementplayer.min.css"
             ],
             "files": [
                 "images/*",
