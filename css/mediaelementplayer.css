@@ -23,8 +23,8 @@
 }
 /* PATCH EOF */
 
-.mejs-container:focus {
-	outline: none;
+.mejs-container:focus { 
+	outline: none; 
 }
 
 .me-plugin {
