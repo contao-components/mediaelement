@@ -17,14 +17,8 @@
 	text-indent: 0;
 }
 
-/* PATCH */
-.mejs-audio {
-	margin-top:18px;
-}
-/* PATCH EOF */
-
-.mejs-container:focus { 
-	outline: none; 
+.mejs-container:focus {
+	outline: none;
 }
 
 .me-plugin {
@@ -977,7 +971,7 @@ div.mejs-speed-button {
 /* Start: Jump Forward */
 
 .mejs-controls .mejs-button.mejs-jump-forward-button {
-	background: transparent url(jumpforward.png) no-repeat;
+	background: transparent url("../images/jumpforward.png") no-repeat;
 	background-position: 3px 3px;
 }
 .mejs-controls .mejs-button.mejs-jump-forward-button button {
