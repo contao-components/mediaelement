@@ -39,9 +39,9 @@
 	height: 21px;
 	top: -7px;
 	border: 0;
-	background: url("../images/controls-ted.png") no-repeat 0 0;	
+	background: url("../images/controls-ted.png") no-repeat 0 0;
 }
-.mejs-ted .mejs-controls .mejs-time-rail .mejs-time-float {	
+.mejs-ted .mejs-controls .mejs-time-rail .mejs-time-float {
 	display: none;
 }
 .mejs-ted .mejs-controls .mejs-playpause-button  {
@@ -98,7 +98,7 @@
 	width: 24px;
 	height: 22px;
 	margin: 0;
-	padding: 0;	
+	padding: 0;
 }
 .mejs-ted  .mejs-controls .mejs-volume-button .mejs-volume-slider {
 	background: #fff;
@@ -116,7 +116,7 @@
 }
 .mejs-ted  .mejs-controls .mejs-volume-button .mejs-volume-current {
 	left: 8px;
-	width: 6px;	
+	width: 6px;
 	background: url("../images/controls-ted.png") repeat-y -48px -66px;
 	height: 50px;
 }
@@ -203,23 +203,23 @@
 	height: 9px;
 	top: -3px;
 	border: 0;
-	background: url("../images/controls-wmp.png") no-repeat 0 -80px;	
+	background: url("../images/controls-wmp.png") no-repeat 0 -80px;
 }
-.mejs-wmp .mejs-controls .mejs-time-rail .mejs-time-float {	
+.mejs-wmp .mejs-controls .mejs-time-rail .mejs-time-float {
 	display: none;
 }
 .mejs-wmp .mejs-controls .mejs-playpause-button  {
 	top: 10px;
 	left: 50%;
-	margin: 10px 0 0 -20px;	
+	margin: 10px 0 0 -20px;
 	width: 40px;
 	height: 40px;
-	
+
 }
 .mejs-wmp .mejs-controls .mejs-playpause-button  button {
 	width: 40px;
 	height: 40px;
-	background: url("../images/controls-wmp.png") no-repeat 0 0;	
+	background: url("../images/controls-wmp.png") no-repeat 0 0;
 	margin: 0;
 	padding: 0;
 }
