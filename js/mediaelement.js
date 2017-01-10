@@ -16,7 +16,7 @@
 var mejs = mejs || {};
 
 // version number
-mejs.version = '2.23.1';
+mejs.version = '2.23.2';
 
 
 // player number (for missing, same id attr)
@@ -1011,7 +1011,7 @@ mejs.HtmlMediaElementShim = {
 		// test for HTML5 and plugin capabilities
 		playback = this.determinePlayback(htmlMediaElement, options, mejs.MediaFeatures.supportsMediaTag, isMediaTag, src);
 		playback.url = (playback.url !== null) ? mejs.Utility.absolutizeUrl(playback.url) : '';
-        playback.scheme = mejs.Utility.determineScheme(playback.url);
+        	playback.scheme = mejs.Utility.determineScheme(playback.url);
 
 		if (playback.method == 'native') {
 			// second fix for android
@@ -2055,8 +2055,8 @@ window.MediaElement = mejs.MediaElement;
         }
 
         // Fallback to default language if requested uid is not translated
-        if (!str && i18n.locale.strings && i18n.locale.strings[i18n.default]) {
-            str = i18n.locale.strings[i18n.default][uid];
+        if (!str && i18n.locale.strings && i18n.locale.strings[i18n["default"]]) {
+            str = i18n.locale.strings[i18n["default"]][uid];
         }
 
         // As a last resort, use the requested uid, to mimic original behavior of i18n utils (in which uid was the english text)
@@ -2178,6 +2178,8 @@ window.MediaElement = mejs.MediaElement;
             // mep-feature-ads
             'mejs.ad-skip': 'Skip ad',
             'mejs.ad-skip-info': 'Skip in %1 seconds',
+
+            'mejs.source-chooser': 'Source Chooser'
         };
     }
 
