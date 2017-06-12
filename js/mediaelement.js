@@ -878,7 +878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mejs = {};
 
 // version number
-mejs.version = '3.1.1';
+mejs.version = '3.1.2';
 
 // Basic HTML5 settings
 mejs.html5media = {
@@ -1093,6 +1093,7 @@ var EN = exports.EN = {
 
 	// features/tracks.js
 	"mejs.captions-subtitles": "Captions/Subtitles",
+	"mejs.captions-chapters": "Chapters",
 	"mejs.none": "None",
 
 	// features/volume.js
@@ -1768,34 +1769,34 @@ var NativeDash = {
   * @param {Object} settings - an object with settings needed to load an DASH player instance
   */
 	loadScript: function loadScript(settings) {
-		if (!NativeDash.isScriptLoaded) {
 
-			if (typeof dashjs !== 'undefined') {
-				NativeDash.createInstance(settings);
-			} else {
-				(function () {
+		// Skip script loading since it is already loaded
+		if (typeof dashjs !== 'undefined') {
+			NativeDash.createInstance(settings);
+		} else if (!NativeDash.isScriptLoaded) {
+			(function () {
 
-					settings.options.path = typeof settings.options.path === 'string' ? settings.options.path : '//cdn.dashjs.org/latest/dash.mediaplayer.min.js';
+				settings.options.path = typeof settings.options.path === 'string' ? settings.options.path : '//cdn.dashjs.org/latest/dash.mediaplayer.min.js';
 
-					var script = _document2.default.createElement('script'),
-					    firstScriptTag = _document2.default.getElementsByTagName('script')[0],
-					    done = false;
+				var script = _document2.default.createElement('script'),
+				    firstScriptTag = _document2.default.getElementsByTagName('script')[0],
+				    done = false;
 
-					script.src = settings.options.path;
+				script.src = settings.options.path;
 
-					// Attach handlers for all browsers
-					script.onload = script.onreadystatechange = function () {
-						if (!done && (!this.readyState || this.readyState === undefined || this.readyState === 'loaded' || this.readyState === 'complete')) {
-							done = true;
-							NativeDash.mediaReady();
-							script.onload = script.onreadystatechange = null;
-						}
-					};
+				// Attach handlers for all browsers
+				script.onload = script.onreadystatechange = function () {
+					if (!done && (!this.readyState || this.readyState === undefined || this.readyState === 'loaded' || this.readyState === 'complete')) {
+						done = true;
+						NativeDash.mediaReady();
+						script.onload = script.onreadystatechange = null;
+					}
+				};
 
-					firstScriptTag.parentNode.insertBefore(script, firstScriptTag);
-				})();
-			}
-			NativeDash.isScriptLoaded = true;
+				firstScriptTag.parentNode.insertBefore(script, firstScriptTag);
+
+				NativeDash.isScriptLoaded = true;
+			})();
 		}
 	},
 
@@ -2559,8 +2560,8 @@ var PluginDetector = exports.PluginDetector = {
 		    description = void 0,
 		    ax = void 0;
 
-		// Firefox, Webkit, Opera
-		if (_constants.NAV.plugins !== undefined && _typeof(_constants.NAV.plugins[pluginName]) === 'object') {
+		// Firefox, Webkit, Opera; avoid MS Edge since `plugins` cannot be accessed
+		if (!_constants.IS_EDGE && _constants.NAV.plugins !== null && _constants.NAV.plugins !== undefined && _typeof(_constants.NAV.plugins[pluginName]) === 'object') {
 			description = _constants.NAV.plugins[pluginName].description;
 			if (description && !(typeof _constants.NAV.mimeTypes !== 'undefined' && _constants.NAV.mimeTypes[mimeType] && !_constants.NAV.mimeTypes[mimeType].enabledPlugin)) {
 				version = description.replace(pluginName, '').replace(/^\s+/, '').replace(/\sr/gi, '.').split('.');
@@ -2724,14 +2725,19 @@ var FlashMediaElementRenderer = {
 			assignMethods(methods[i]);
 		}
 
+		// give initial events like in others renderers
+		var initEvents = ['rendererready', 'loadeddata', 'loadedmetadata', 'canplay'];
+
+		for (i = 0, il = initEvents.length; i < il; i++) {
+			var event = (0, _dom.createEvent)(initEvents[i], flash);
+			mediaElement.dispatchEvent(event);
+		}
+
 		// add a ready method that Flash can call to
 		_window2.default['__ready__' + flash.id] = function () {
 
 			flash.flashReady = true;
 			flash.flashApi = _document2.default.getElementById('__' + flash.id);
-
-			var event = (0, _dom.createEvent)('rendererready', flash);
-			mediaElement.dispatchEvent(event);
 
 			// do call stack
 			if (flash.flashApiStack.length) {
@@ -2768,6 +2774,10 @@ var FlashMediaElementRenderer = {
 		    isVideo = mediaElement.originalNode !== null && mediaElement.originalNode.tagName.toLowerCase() === 'video',
 		    flashHeight = isVideo ? mediaElement.originalNode.height : 1,
 		    flashWidth = isVideo ? mediaElement.originalNode.width : 1;
+
+		if (!!mediaElement.originalNode.currentSrc.length) {
+			flashVars.push('src=' + mediaElement.originalNode.currentSrc);
+		}
 
 		if (flash.options.enablePseudoStreaming === true) {
 			flashVars.push('pseudostreamstart=' + flash.options.pseudoStreamingStartQueryParam);
@@ -2843,7 +2853,6 @@ var FlashMediaElementRenderer = {
 			for (i = 0, il = mediaFiles.length; i < il; i++) {
 				if (_renderer.renderer.renderers[options.prefix].canPlayType(mediaFiles[i].type)) {
 					flash.setSrc(mediaFiles[i].src);
-					flash.load();
 					break;
 				}
 			}
@@ -3067,34 +3076,33 @@ var NativeFlv = {
   * @param {Object} settings - an object with settings needed to load an FLV player instance
   */
 	loadScript: function loadScript(settings) {
-		if (!NativeFlv.isMediaStarted) {
 
-			if (typeof flvjs !== 'undefined') {
-				NativeFlv.createInstance(settings);
-			} else {
-				(function () {
+		// Skip script loading since it is already loaded
+		if (typeof flvjs !== 'undefined') {
+			NativeFlv.createInstance(settings);
+		} else if (!NativeFlv.isMediaStarted) {
+			(function () {
 
-					settings.options.path = typeof settings.options.path === 'string' ? settings.options.path : '//cdnjs.cloudflare.com/ajax/libs/flv.js/1.1.0/flv.min.js';
+				settings.options.path = typeof settings.options.path === 'string' ? settings.options.path : '//cdnjs.cloudflare.com/ajax/libs/flv.js/1.1.0/flv.min.js';
 
-					var script = _document2.default.createElement('script'),
-					    firstScriptTag = _document2.default.getElementsByTagName('script')[0],
-					    done = false;
+				var script = _document2.default.createElement('script'),
+				    firstScriptTag = _document2.default.getElementsByTagName('script')[0],
+				    done = false;
 
-					script.src = settings.options.path;
+				script.src = settings.options.path;
 
-					// Attach handlers for all browsers
-					script.onload = script.onreadystatechange = function () {
-						if (!done && (!this.readyState || this.readyState === undefined || this.readyState === 'loaded' || this.readyState === 'complete')) {
-							done = true;
-							NativeFlv.mediaReady();
-							script.onload = script.onreadystatechange = null;
-						}
-					};
+				// Attach handlers for all browsers
+				script.onload = script.onreadystatechange = function () {
+					if (!done && (!this.readyState || this.readyState === undefined || this.readyState === 'loaded' || this.readyState === 'complete')) {
+						done = true;
+						NativeFlv.mediaReady();
+						script.onload = script.onreadystatechange = null;
+					}
+				};
 
-					firstScriptTag.parentNode.insertBefore(script, firstScriptTag);
-				})();
-			}
-			NativeFlv.isMediaStarted = true;
+				firstScriptTag.parentNode.insertBefore(script, firstScriptTag);
+				NativeFlv.isMediaStarted = true;
+			})();
 		}
 	},
 
@@ -3397,34 +3405,33 @@ var NativeHls = {
   * @param {Object} settings - an object with settings needed to load an HLS player instance
   */
 	loadScript: function loadScript(settings) {
-		if (!NativeHls.isMediaStarted) {
 
-			if (typeof Hls !== 'undefined') {
-				NativeHls.createInstance(settings);
-			} else {
-				(function () {
+		// Skip script loading since it is already loaded
+		if (typeof Hls !== 'undefined') {
+			NativeHls.createInstance(settings);
+		} else if (!NativeHls.isMediaStarted) {
+			(function () {
 
-					settings.options.path = typeof settings.options.path === 'string' ? settings.options.path : '//cdn.jsdelivr.net/hls.js/latest/hls.min.js';
+				settings.options.path = typeof settings.options.path === 'string' ? settings.options.path : '//cdn.jsdelivr.net/hls.js/latest/hls.min.js';
 
-					var script = _document2.default.createElement('script'),
-					    firstScriptTag = _document2.default.getElementsByTagName('script')[0],
-					    done = false;
+				var script = _document2.default.createElement('script'),
+				    firstScriptTag = _document2.default.getElementsByTagName('script')[0],
+				    done = false;
 
-					script.src = settings.options.path;
+				script.src = settings.options.path;
 
-					// Attach handlers for all browsers
-					script.onload = script.onreadystatechange = function () {
-						if (!done && (!this.readyState || this.readyState === undefined || this.readyState === 'loaded' || this.readyState === 'complete')) {
-							done = true;
-							NativeHls.mediaReady();
-							script.onload = script.onreadystatechange = null;
-						}
-					};
+				// Attach handlers for all browsers
+				script.onload = script.onreadystatechange = function () {
+					if (!done && (!this.readyState || this.readyState === undefined || this.readyState === 'loaded' || this.readyState === 'complete')) {
+						done = true;
+						NativeHls.mediaReady();
+						script.onload = script.onreadystatechange = null;
+					}
+				};
 
-					firstScriptTag.parentNode.insertBefore(script, firstScriptTag);
-				})();
-			}
-			NativeHls.isMediaStarted = true;
+				firstScriptTag.parentNode.insertBefore(script, firstScriptTag);
+				NativeHls.isMediaStarted = true;
+			})();
 		}
 	},
 
@@ -5540,7 +5547,7 @@ if (_window2.default.postMessage && _typeof(_window2.default.addEventListener)) 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.cancelFullScreen = exports.requestFullScreen = exports.isFullScreen = exports.FULLSCREEN_EVENT_NAME = exports.HAS_NATIVE_FULLSCREEN_ENABLED = exports.HAS_TRUE_NATIVE_FULLSCREEN = exports.HAS_IOS_FULLSCREEN = exports.HAS_MS_NATIVE_FULLSCREEN = exports.HAS_MOZ_NATIVE_FULLSCREEN = exports.HAS_WEBKIT_NATIVE_FULLSCREEN = exports.HAS_NATIVE_FULLSCREEN = exports.SUPPORTS_NATIVE_HLS = exports.SUPPORTS_MEDIA_TAG = exports.SUPPORT_POINTER_EVENTS = exports.HAS_MSE = exports.HAS_TOUCH = exports.IS_STOCK_ANDROID = exports.IS_SAFARI = exports.IS_FIREFOX = exports.IS_CHROME = exports.IS_IE = exports.IS_ANDROID = exports.IS_IOS = exports.IS_IPHONE = exports.IS_IPAD = exports.UA = exports.NAV = undefined;
+exports.cancelFullScreen = exports.requestFullScreen = exports.isFullScreen = exports.FULLSCREEN_EVENT_NAME = exports.HAS_NATIVE_FULLSCREEN_ENABLED = exports.HAS_TRUE_NATIVE_FULLSCREEN = exports.HAS_IOS_FULLSCREEN = exports.HAS_MS_NATIVE_FULLSCREEN = exports.HAS_MOZ_NATIVE_FULLSCREEN = exports.HAS_WEBKIT_NATIVE_FULLSCREEN = exports.HAS_NATIVE_FULLSCREEN = exports.SUPPORTS_NATIVE_HLS = exports.SUPPORTS_MEDIA_TAG = exports.SUPPORT_POINTER_EVENTS = exports.HAS_MSE = exports.IS_STOCK_ANDROID = exports.IS_SAFARI = exports.IS_FIREFOX = exports.IS_CHROME = exports.IS_EDGE = exports.IS_IE = exports.IS_ANDROID = exports.IS_IOS = exports.IS_IPHONE = exports.IS_IPAD = exports.UA = exports.NAV = undefined;
 
 var _window = _dereq_(3);
 
@@ -5564,12 +5571,12 @@ var IS_IPHONE = exports.IS_IPHONE = UA.match(/iphone/i) !== null;
 var IS_IOS = exports.IS_IOS = IS_IPHONE || IS_IPAD;
 var IS_ANDROID = exports.IS_ANDROID = UA.match(/android/i) !== null;
 var IS_IE = exports.IS_IE = NAV.appName.toLowerCase().includes('microsoft') || NAV.appName.toLowerCase().match(/trident/gi) !== null;
+var IS_EDGE = exports.IS_EDGE = 'msLaunchUri' in NAV && !('documentMode' in _document2.default);
 var IS_CHROME = exports.IS_CHROME = UA.match(/chrome/gi) !== null;
 var IS_FIREFOX = exports.IS_FIREFOX = UA.match(/firefox/gi) !== null;
 var IS_SAFARI = exports.IS_SAFARI = UA.match(/safari/gi) !== null && !IS_CHROME;
 var IS_STOCK_ANDROID = exports.IS_STOCK_ANDROID = UA.match(/^mozilla\/\d+\.\d+\s\(linux;\su;/gi) !== null;
 
-var HAS_TOUCH = exports.HAS_TOUCH = !!('ontouchstart' in _window2.default || _window2.default.DocumentTouch && _document2.default instanceof _window2.default.DocumentTouch);
 var HAS_MSE = exports.HAS_MSE = 'MediaSource' in _window2.default;
 var SUPPORT_POINTER_EVENTS = exports.SUPPORT_POINTER_EVENTS = function () {
 	var element = _document2.default.createElement('x'),
@@ -5703,11 +5710,11 @@ _mejs2.default.Features.isiPhone = IS_IPHONE;
 _mejs2.default.Features.isiOS = _mejs2.default.Features.isiPhone || _mejs2.default.Features.isiPad;
 _mejs2.default.Features.isAndroid = IS_ANDROID;
 _mejs2.default.Features.isIE = IS_IE;
+_mejs2.default.Features.isEdge = IS_EDGE;
 _mejs2.default.Features.isChrome = IS_CHROME;
 _mejs2.default.Features.isFirefox = IS_FIREFOX;
 _mejs2.default.Features.isSafari = IS_SAFARI;
 _mejs2.default.Features.isStockAndroid = IS_STOCK_ANDROID;
-_mejs2.default.Features.hasTouch = HAS_TOUCH;
 _mejs2.default.Features.hasMSE = HAS_MSE;
 _mejs2.default.Features.supportsMediaTag = SUPPORTS_MEDIA_TAG;
 _mejs2.default.Features.supportsNativeHLS = SUPPORTS_NATIVE_HLS;
