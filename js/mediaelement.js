@@ -878,7 +878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mejs = {};
 
 // version number
-mejs.version = '3.1.0';
+mejs.version = '3.1.1';
 
 // Basic HTML5 settings
 mejs.html5media = {
@@ -2830,9 +2830,13 @@ var FlashMediaElementRenderer = {
 			flash.flashNode.style.width = width + 'px';
 			flash.flashNode.style.height = height + 'px';
 
-			if (flash.flashApi !== null) {
+			if (flash.flashApi !== null && typeof flash.flashApi.fire_setSize === 'function') {
 				flash.flashApi.fire_setSize(width, height);
 			}
+		};
+
+		flash.destroy = function () {
+			flash.flashNode.parentNode.removeChild(flash.flashNode);
 		};
 
 		if (mediaFiles && mediaFiles.length > 0) {
