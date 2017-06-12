@@ -878,7 +878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mejs = {};
 
 // version number
-mejs.version = '3.0.2';
+mejs.version = '3.1.0';
 
 // Basic HTML5 settings
 mejs.html5media = {
@@ -890,10 +890,11 @@ mejs.html5media = {
 	'volume', 'src', 'currentTime', 'muted',
 
 	// GET only
-	'duration', 'paused', 'ended',
+	'duration', 'paused', 'ended', 'buffered', 'error', 'networkState', 'readyState', 'seeking', 'seekable',
 
 	// OTHERS
-	'error', 'currentSrc', 'networkState', 'preload', 'buffered', 'bufferedBytes', 'bufferedTime', 'readyState', 'seeking', 'initialTime', 'startOffsetTime', 'defaultPlaybackRate', 'playbackRate', 'played', 'seekable', 'autoplay', 'loop', 'controls'],
+	'currentSrc', 'preload', 'bufferedBytes', 'bufferedTime', 'initialTime', 'startOffsetTime', 'defaultPlaybackRate', 'playbackRate', 'played', 'autoplay', 'loop', 'controls'],
+	readOnlyProperties: ['duration', 'paused', 'ended', 'buffered', 'error', 'networkState', 'readyState', 'seeking', 'seekable'],
 	/**
   * @type {String[]}
   */
@@ -1710,6 +1711,8 @@ Object.assign(_player2.default.prototype, {
 		t.timefloat = controls.find('.' + t.options.classPrefix + 'time-float');
 		t.timefloatcurrent = controls.find('.' + t.options.classPrefix + 'time-float-current');
 		t.slider = controls.find('.' + t.options.classPrefix + 'time-slider');
+		t.newTime = 0;
+		t.forcedHandlePause = false;
 
 		/**
    *
@@ -1721,7 +1724,6 @@ Object.assign(_player2.default.prototype, {
 			var offset = t.total.offset(),
 			    width = t.total.width(),
 			    percentage = 0,
-			    newTime = 0,
 			    pos = 0,
 			    x = void 0;
 
@@ -1744,17 +1746,18 @@ Object.assign(_player2.default.prototype, {
 
 				pos = x - offset.left;
 				percentage = pos / width;
-				newTime = percentage <= 0.02 ? 0 : percentage * media.duration;
+				t.newTime = percentage <= 0.02 ? 0 : percentage * media.duration;
 
-				// seek to where the mouse is
-				if (mouseIsDown && newTime.toFixed(4) !== media.currentTime.toFixed(4)) {
-					media.setCurrentTime(newTime);
+				// fake seek to where the mouse is 
+				if (mouseIsDown && t.newTime.toFixed(4) !== media.currentTime.toFixed(4)) {
+					t.setCurrentRailHandle(t.newTime);
+					t.updateCurrent(t.newTime);
 				}
 
 				// position floating time box
 				if (!_constants.HAS_TOUCH) {
 					t.timefloat.css('left', pos);
-					t.timefloatcurrent.html((0, _time.secondsToTimeCode)(newTime, player.options.alwaysShowHours));
+					t.timefloatcurrent.html((0, _time.secondsToTimeCode)(t.newTime, player.options.alwaysShowHours));
 					t.timefloat.show();
 				}
 			}
@@ -1799,6 +1802,18 @@ Object.assign(_player2.default.prototype, {
 			if (now - lastKeyPressTime >= 1000) {
 				media.play();
 			}
+		},
+		    handleMouseup = function handleMouseup() {
+
+			if (t.forcedHandlePause) {
+				t.media.play();
+			}
+			if (mouseIsDown && t.newTime.toFixed(4) !== media.currentTime.toFixed(4)) {
+				media.setCurrentTime(t.newTime);
+				player.setCurrentRail();
+				t.updateCurrent(t.newTime);
+			}
+			t.forcedHandlePause = false;
 		};
 
 		// Events
@@ -1902,15 +1917,23 @@ Object.assign(_player2.default.prototype, {
 
 		// handle clicks
 		t.rail.on('mousedown touchstart', function (e) {
+			t.forcedHandlePause = false;
 			if (media.duration !== Infinity) {
 				// only handle left clicks or touch
 				if (e.which === 1 || e.which === 0) {
+
+					if (!media.paused) {
+						t.media.pause();
+						t.forcedHandlePause = true;
+					}
+
 					mouseIsDown = true;
 					handleMouseMove(e);
 					t.globalBind('mousemove.dur touchmove.dur', function (e) {
 						handleMouseMove(e);
 					});
 					t.globalBind('mouseup.dur touchend.dur', function () {
+						handleMouseup();
 						mouseIsDown = false;
 						if (t.timefloat !== undefined) {
 							t.timefloat.hide();
@@ -1947,7 +1970,9 @@ Object.assign(_player2.default.prototype, {
 		media.addEventListener('progress', function (e) {
 			if (media.duration !== Infinity) {
 				player.setProgressRail(e);
-				player.setCurrentRail(e);
+				if (!t.forcedHandlePause) {
+					player.setCurrentRail(e);
+				}
 			} else if (!controls.find('.' + t.options.classPrefix + 'broadcast').length) {
 				controls.find('.' + t.options.classPrefix + 'time-rail').empty().html('<span class="' + t.options.classPrefix + 'broadcast">' + mejs.i18n.t('mejs.live-broadcast') + '</span>');
 			}
@@ -1957,7 +1982,9 @@ Object.assign(_player2.default.prototype, {
 		media.addEventListener('timeupdate', function (e) {
 			if (media.duration !== Infinity) {
 				player.setProgressRail(e);
-				player.setCurrentRail(e);
+				if (!t.forcedHandlePause) {
+					player.setCurrentRail(e);
+				}
 				updateSlider(e);
 			} else if (!controls.find('.' + t.options.classPrefix + 'broadcast').length) {
 				controls.find('.' + t.options.classPrefix + 'time-rail').empty().html('<span class="' + t.options.classPrefix + 'broadcast">' + mejs.i18n.t('mejs.live-broadcast') + '</span>');
@@ -1967,7 +1994,9 @@ Object.assign(_player2.default.prototype, {
 		t.container.on('controlsresize', function (e) {
 			if (media.duration !== Infinity) {
 				player.setProgressRail(e);
-				player.setCurrentRail(e);
+				if (!t.forcedHandlePause) {
+					player.setCurrentRail(e);
+				}
 			}
 		});
 	},
@@ -2010,21 +2039,38 @@ Object.assign(_player2.default.prototype, {
 		}
 	},
 	/**
+  * Update the slider's width depending on the time assigned
+  *
+  * @param {Number} fakeTime
+  */
+	setCurrentRailHandle: function setCurrentRailHandle(fakeTime) {
+		var t = this;
+		t.setCurrentRailMain(t, fakeTime);
+	},
+	/**
   * Update the slider's width depending on the current time
   *
   */
 	setCurrentRail: function setCurrentRail() {
-
 		var t = this;
-
+		t.setCurrentRailMain(t);
+	},
+	/**
+  * Method that handles the calculation of the width of the rail.
+  *
+  * @param {MediaElementPlayer} t
+  * @param {?Number} fakeTime
+  */
+	setCurrentRailMain: function setCurrentRailMain(t, fakeTime) {
 		if (t.media.currentTime !== undefined && t.media.duration) {
+			var nTime = typeof fakeTime === 'undefined' ? t.media.currentTime : fakeTime;
 
 			// update bar and handle
 			if (t.total && t.handle) {
-				var newWidth = Math.round(t.total.width() * t.media.currentTime / t.media.duration),
+				var newWidth = Math.round(t.total.width() * nTime / t.media.duration),
 				    handlePos = newWidth - Math.round(t.handle.outerWidth(true) / 2);
 
-				newWidth = t.media.currentTime / t.media.duration * 100;
+				newWidth = nTime / t.media.duration * 100;
 				t.current.width(newWidth + '%');
 				t.handle.css('left', handlePos);
 			}
@@ -3548,41 +3594,43 @@ _mejs2.default.players = {};
 var config = exports.config = {
 	// url to poster (to fix iOS 3.x)
 	poster: '',
-	// When the video is ended, we can show the poster.
+	// When the video is ended, show the poster.
 	showPosterWhenEnded: false,
-	// default if the <video width> is not specified
+	// When the video is paused, show the poster.
+	showPosterWhenPaused: false,
+	// Default if the <video width> is not specified
 	defaultVideoWidth: 480,
-	// default if the <video height> is not specified
+	// Default if the <video height> is not specified
 	defaultVideoHeight: 270,
-	// if set, overrides <video width>
+	// If set, overrides <video width>
 	videoWidth: -1,
-	// if set, overrides <video height>
+	// If set, overrides <video height>
 	videoHeight: -1,
-	// default if the user doesn't specify
+	// Default if the user doesn't specify
 	defaultAudioWidth: 400,
-	// default if the user doesn't specify
+	// Default if the user doesn't specify
 	defaultAudioHeight: 40,
-	// default amount to move back when back key is pressed
+	// Default amount to move back when back key is pressed
 	defaultSeekBackwardInterval: function defaultSeekBackwardInterval(media) {
 		return media.duration * 0.05;
 	},
-	// default amount to move forward when forward key is pressed
+	// Default amount to move forward when forward key is pressed
 	defaultSeekForwardInterval: function defaultSeekForwardInterval(media) {
 		return media.duration * 0.05;
 	},
-	// set dimensions via JS instead of CSS
+	// Set dimensions via JS instead of CSS
 	setDimensions: true,
-	// width of audio player
+	// Width of audio player
 	audioWidth: -1,
-	// height of audio player
+	// Height of audio player
 	audioHeight: -1,
-	// initial volume when the player starts (overridden by user cookie)
+	// Initial volume when the player starts (overridden by user cookie)
 	startVolume: 0.8,
-	// useful for <audio> player loops
+	// Useful for <audio> player loops
 	loop: false,
-	// rewind to beginning when media ends
+	// Rewind to beginning when media ends
 	autoRewind: true,
-	// resize to media dimensions
+	// Resize to media dimensions
 	enableAutosize: true,
 	/*
   * Time format to use. Default: 'mm:ss'
@@ -3600,16 +3648,18 @@ var config = exports.config = {
   * Format 'm:s': 1:15
   */
 	timeFormat: '',
-	// forces the hour marker (##:00:00)
+	// Force the hour marker (##:00:00)
 	alwaysShowHours: false,
-	// show framecount in timecode (##:00:00:00)
+	// Show framecount in timecode (##:00:00:00)
 	showTimecodeFrameCount: false,
-	// used when showTimecodeFrameCount is set to true
+	// Used when showTimecodeFrameCount is set to true
 	framesPerSecond: 25,
 	// Hide controls when playing and mouse is not over the video
 	alwaysShowControls: false,
-	// Display the video control
+	// Display the video control when media is loading
 	hideVideoControlsOnLoad: false,
+	// Display the video controls when media is paused
+	hideVideoControlsOnPause: false,
 	// Enable click video element to toggle play/pause
 	clickToPlayPause: true,
 	// Time in ms to hide controls
@@ -3618,25 +3668,25 @@ var config = exports.config = {
 	controlsTimeoutMouseEnter: 2500,
 	// Time in ms to trigger the timer when mouse leaves
 	controlsTimeoutMouseLeave: 1000,
-	// force iPad's native controls
+	// Force iPad's native controls
 	iPadUseNativeControls: false,
-	// force iPhone's native controls
+	// Force iPhone's native controls
 	iPhoneUseNativeControls: false,
-	// force Android's native controls
+	// Force Android's native controls
 	AndroidUseNativeControls: false,
-	// features to show
+	// Features to show
 	features: ['playpause', 'current', 'progress', 'duration', 'tracks', 'volume', 'fullscreen'],
-	// only for dynamic
+	// Only for dynamic
 	isVideo: true,
-	// stretching modes (auto, fill, responsive, none)
+	// Stretching modes (auto, fill, responsive, none)
 	stretching: 'auto',
-	// prefix class names on elements
+	// Prefix class names on elements
 	classPrefix: 'mejs__',
-	// turns keyboard support on and off for this instance
+	// Turn keyboard support on and off for this instance
 	enableKeyboard: true,
-	// when this player starts, it will pause other players
+	// When this player starts, it will pause other players
 	pauseOtherPlayers: true,
-	// array of keyboard actions such as play/pause
+	// Array of keyboard actions such as play/pause
 	keyActions: [{
 		keys: [32, // SPACE
 		179 // GOOGLE play/pause button
@@ -4004,7 +4054,7 @@ var MediaElementPlayer = function () {
 
 			doAnimation = doAnimation === undefined || doAnimation;
 
-			if (!t.controlsAreVisible || t.options.alwaysShowControls || t.keyboardAction || t.media.paused && t.media.readyState === 4 && (!t.options.hideVideoControlsOnLoad && t.media.currentTime <= 0 || t.media.currentTime > 0) || t.isVideo && !t.options.hideVideoControlsOnLoad && !t.media.readyState || t.media.ended) {
+			if (!t.controlsAreVisible || t.options.alwaysShowControls || t.keyboardAction || t.media.paused && t.media.readyState === 4 && (!t.options.hideVideoControlsOnLoad && t.media.currentTime <= 0 || !t.options.hideVideoControlsOnPause && t.media.currentTime > 0) || t.isVideo && !t.options.hideVideoControlsOnLoad && !t.media.readyState || t.media.ended) {
 				return;
 			}
 
@@ -4090,7 +4140,6 @@ var MediaElementPlayer = function () {
 	}, {
 		key: '_meReady',
 		value: function _meReady(media, domNode) {
-			var _this = this;
 
 			var t = this,
 			    autoplayAttr = domNode.getAttribute('autoplay'),
@@ -4337,8 +4386,8 @@ var MediaElementPlayer = function () {
 					// Only change the time format when necessary
 					var duration = null;
 					t.media.addEventListener('timeupdate', function () {
-						if (duration !== _this.duration) {
-							duration = _this.duration;
+						if (duration !== t.media.duration) {
+							duration = t.media.duration;
 							(0, _time.calculateTimeFormat)(duration, t.options, t.options.framesPerSecond || 25);
 
 							// make sure to fill in and resize the controls (e.g., 00:00 => 01:13:15
@@ -4821,6 +4870,16 @@ var MediaElementPlayer = function () {
 					poster.show();
 				}, false);
 			}
+
+			if (player.options.showPosterWhenPaused) {
+				media.addEventListener('pause', function () {
+					// To avoid displaying the poster when video ended, since it
+					// triggers a pause event as well
+					if (!media.ended) {
+						poster.show();
+					}
+				}, false);
+			}
 		}
 	}, {
 		key: 'buildoverlays',
@@ -5071,6 +5130,10 @@ var MediaElementPlayer = function () {
 				t.$node.remove();
 			} else {
 				t.$node.insertBefore(t.container);
+			}
+
+			if (typeof t.media.destroy === 'function') {
+				t.media.destroy();
 			}
 
 			t.media.remove();
@@ -5822,20 +5885,22 @@ var DashNativeRenderer = {
 			};
 
 			node['set' + capName] = function (value) {
-				if (dashPlayer !== null) {
-					if (propName === 'src') {
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					if (dashPlayer !== null) {
+						if (propName === 'src') {
 
-						dashPlayer.attachSource(value);
+							dashPlayer.attachSource(value);
 
-						if (node.getAttribute('autoplay')) {
-							node.play();
+							if (node.getAttribute('autoplay')) {
+								node.play();
+							}
 						}
-					}
 
-					node[propName] = value;
-				} else {
-					// store for after "READY" event fires
-					stack.push({ type: 'set', propName: propName, value: value });
+						node[propName] = value;
+					} else {
+						// store for after "READY" event fires
+						stack.push({ type: 'set', propName: propName, value: value });
+					}
 				}
 			};
 		};
@@ -6718,7 +6783,7 @@ var FlashMediaElementRenderer = {
 
 		mediaElement.appendChild(flash.flashWrapper);
 
-		if (isVideo && mediaElement.originalNode !== null) {
+		if (mediaElement.originalNode !== null) {
 			mediaElement.originalNode.style.display = 'none';
 		}
 
@@ -7133,17 +7198,19 @@ var FlvNativeRenderer = {
 			};
 
 			node['set' + capName] = function (value) {
-				if (flvPlayer !== null) {
-					node[propName] = value;
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					if (flvPlayer !== null) {
+						node[propName] = value;
 
-					if (propName === 'src') {
-						flvPlayer.detachMediaElement();
-						flvPlayer.attachMediaElement(node);
-						flvPlayer.load();
+						if (propName === 'src') {
+							flvPlayer.detachMediaElement();
+							flvPlayer.attachMediaElement(node);
+							flvPlayer.load();
+						}
+					} else {
+						// store for after "READY" event fires
+						stack.push({ type: 'set', propName: propName, value: value });
 					}
-				} else {
-					// store for after "READY" event fires
-					stack.push({ type: 'set', propName: propName, value: value });
 				}
 			};
 		};
@@ -7487,26 +7554,28 @@ var HlsNativeRenderer = {
 			};
 
 			node['set' + capName] = function (value) {
-				if (hlsPlayer !== null) {
-					node[propName] = value;
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					if (hlsPlayer !== null) {
+						node[propName] = value;
 
-					if (propName === 'src') {
+						if (propName === 'src') {
 
-						hlsPlayer.destroy();
-						hlsPlayer = null;
-						hlsPlayer = NativeHls.createInstance({
-							options: options.hls,
-							id: id
-						});
+							hlsPlayer.destroy();
+							hlsPlayer = null;
+							hlsPlayer = NativeHls.createInstance({
+								options: options.hls,
+								id: id
+							});
 
-						hlsPlayer.attachMedia(node);
-						hlsPlayer.on(Hls.Events.MEDIA_ATTACHED, function () {
-							hlsPlayer.loadSource(value);
-						});
+							hlsPlayer.attachMedia(node);
+							hlsPlayer.on(Hls.Events.MEDIA_ATTACHED, function () {
+								hlsPlayer.loadSource(value);
+							});
+						}
+					} else {
+						// store for after "READY" event fires
+						stack.push({ type: 'set', propName: propName, value: value });
 					}
-				} else {
-					// store for after "READY" event fires
-					stack.push({ type: 'set', propName: propName, value: value });
 				}
 			};
 		};
@@ -7767,7 +7836,9 @@ var HtmlMediaElement = {
 			};
 
 			node['set' + capName] = function (value) {
-				node[propName] = value;
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					node[propName] = value;
+				}
 			};
 		};
 
@@ -9261,8 +9332,9 @@ var YouTubeIframeRenderer = {
 		mediaElement.originalNode.parentNode.insertBefore(youtubeContainer, mediaElement.originalNode);
 		mediaElement.originalNode.style.display = 'none';
 
-		var height = mediaElement.originalNode.height,
-		    width = mediaElement.originalNode.width,
+		var isAudio = mediaElement.originalNode.tagName.toLowerCase() === 'audio',
+		    height = isAudio ? '0' : mediaElement.originalNode.height,
+		    width = isAudio ? '0' : mediaElement.originalNode.width,
 		    videoId = YouTubeApi.getYouTubeId(mediaFiles[0].src),
 		    youtubeSettings = {
 			id: youtube.id,
@@ -9396,6 +9468,11 @@ var YouTubeIframeRenderer = {
 				}
 			}
 		};
+
+		// The following will prevent that in mobile devices, YouTube is displayed in fullscreen when using audio
+		if (isAudio) {
+			youtubeSettings.playerVars.playsinline = 1;
+		}
 
 		// send it off for async loading and creation
 		YouTubeApi.enqueueIframe(youtubeSettings);

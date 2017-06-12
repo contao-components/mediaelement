@@ -878,7 +878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mejs = {};
 
 // version number
-mejs.version = '3.0.2';
+mejs.version = '3.1.0';
 
 // Basic HTML5 settings
 mejs.html5media = {
@@ -890,10 +890,11 @@ mejs.html5media = {
 	'volume', 'src', 'currentTime', 'muted',
 
 	// GET only
-	'duration', 'paused', 'ended',
+	'duration', 'paused', 'ended', 'buffered', 'error', 'networkState', 'readyState', 'seeking', 'seekable',
 
 	// OTHERS
-	'error', 'currentSrc', 'networkState', 'preload', 'buffered', 'bufferedBytes', 'bufferedTime', 'readyState', 'seeking', 'initialTime', 'startOffsetTime', 'defaultPlaybackRate', 'playbackRate', 'played', 'seekable', 'autoplay', 'loop', 'controls'],
+	'currentSrc', 'preload', 'bufferedBytes', 'bufferedTime', 'initialTime', 'startOffsetTime', 'defaultPlaybackRate', 'playbackRate', 'played', 'autoplay', 'loop', 'controls'],
+	readOnlyProperties: ['duration', 'paused', 'ended', 'buffered', 'error', 'networkState', 'readyState', 'seeking', 'seekable'],
 	/**
   * @type {String[]}
   */
@@ -1877,20 +1878,22 @@ var DashNativeRenderer = {
 			};
 
 			node['set' + capName] = function (value) {
-				if (dashPlayer !== null) {
-					if (propName === 'src') {
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					if (dashPlayer !== null) {
+						if (propName === 'src') {
 
-						dashPlayer.attachSource(value);
+							dashPlayer.attachSource(value);
 
-						if (node.getAttribute('autoplay')) {
-							node.play();
+							if (node.getAttribute('autoplay')) {
+								node.play();
+							}
 						}
-					}
 
-					node[propName] = value;
-				} else {
-					// store for after "READY" event fires
-					stack.push({ type: 'set', propName: propName, value: value });
+						node[propName] = value;
+					} else {
+						// store for after "READY" event fires
+						stack.push({ type: 'set', propName: propName, value: value });
+					}
 				}
 			};
 		};
@@ -2773,7 +2776,7 @@ var FlashMediaElementRenderer = {
 
 		mediaElement.appendChild(flash.flashWrapper);
 
-		if (isVideo && mediaElement.originalNode !== null) {
+		if (mediaElement.originalNode !== null) {
 			mediaElement.originalNode.style.display = 'none';
 		}
 
@@ -3188,17 +3191,19 @@ var FlvNativeRenderer = {
 			};
 
 			node['set' + capName] = function (value) {
-				if (flvPlayer !== null) {
-					node[propName] = value;
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					if (flvPlayer !== null) {
+						node[propName] = value;
 
-					if (propName === 'src') {
-						flvPlayer.detachMediaElement();
-						flvPlayer.attachMediaElement(node);
-						flvPlayer.load();
+						if (propName === 'src') {
+							flvPlayer.detachMediaElement();
+							flvPlayer.attachMediaElement(node);
+							flvPlayer.load();
+						}
+					} else {
+						// store for after "READY" event fires
+						stack.push({ type: 'set', propName: propName, value: value });
 					}
-				} else {
-					// store for after "READY" event fires
-					stack.push({ type: 'set', propName: propName, value: value });
 				}
 			};
 		};
@@ -3542,26 +3547,28 @@ var HlsNativeRenderer = {
 			};
 
 			node['set' + capName] = function (value) {
-				if (hlsPlayer !== null) {
-					node[propName] = value;
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					if (hlsPlayer !== null) {
+						node[propName] = value;
 
-					if (propName === 'src') {
+						if (propName === 'src') {
 
-						hlsPlayer.destroy();
-						hlsPlayer = null;
-						hlsPlayer = NativeHls.createInstance({
-							options: options.hls,
-							id: id
-						});
+							hlsPlayer.destroy();
+							hlsPlayer = null;
+							hlsPlayer = NativeHls.createInstance({
+								options: options.hls,
+								id: id
+							});
 
-						hlsPlayer.attachMedia(node);
-						hlsPlayer.on(Hls.Events.MEDIA_ATTACHED, function () {
-							hlsPlayer.loadSource(value);
-						});
+							hlsPlayer.attachMedia(node);
+							hlsPlayer.on(Hls.Events.MEDIA_ATTACHED, function () {
+								hlsPlayer.loadSource(value);
+							});
+						}
+					} else {
+						// store for after "READY" event fires
+						stack.push({ type: 'set', propName: propName, value: value });
 					}
-				} else {
-					// store for after "READY" event fires
-					stack.push({ type: 'set', propName: propName, value: value });
 				}
 			};
 		};
@@ -3822,7 +3829,9 @@ var HtmlMediaElement = {
 			};
 
 			node['set' + capName] = function (value) {
-				node[propName] = value;
+				if (!_mejs2.default.html5media.readOnlyProperties.includes(propName)) {
+					node[propName] = value;
+				}
 			};
 		};
 
@@ -5316,8 +5325,9 @@ var YouTubeIframeRenderer = {
 		mediaElement.originalNode.parentNode.insertBefore(youtubeContainer, mediaElement.originalNode);
 		mediaElement.originalNode.style.display = 'none';
 
-		var height = mediaElement.originalNode.height,
-		    width = mediaElement.originalNode.width,
+		var isAudio = mediaElement.originalNode.tagName.toLowerCase() === 'audio',
+		    height = isAudio ? '0' : mediaElement.originalNode.height,
+		    width = isAudio ? '0' : mediaElement.originalNode.width,
 		    videoId = YouTubeApi.getYouTubeId(mediaFiles[0].src),
 		    youtubeSettings = {
 			id: youtube.id,
@@ -5451,6 +5461,11 @@ var YouTubeIframeRenderer = {
 				}
 			}
 		};
+
+		// The following will prevent that in mobile devices, YouTube is displayed in fullscreen when using audio
+		if (isAudio) {
+			youtubeSettings.playerVars.playsinline = 1;
+		}
 
 		// send it off for async loading and creation
 		YouTubeApi.enqueueIframe(youtubeSettings);
