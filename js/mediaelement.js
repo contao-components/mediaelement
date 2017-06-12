@@ -9,13 +9,13 @@
  * License: MIT
  *
  */
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 
-},{}],2:[function(require,module,exports){
+},{}],2:[function(_dereq_,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
-var minDoc = require('min-document');
+var minDoc = _dereq_(1);
 
 if (typeof document !== 'undefined') {
     module.exports = document;
@@ -30,7 +30,7 @@ if (typeof document !== 'undefined') {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":1}],3:[function(require,module,exports){
+},{"1":1}],3:[function(_dereq_,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window;
@@ -43,7 +43,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],4:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -52,13 +52,13 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _mejs = require('./mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _en = require('../languages/en');
+var _en = _dereq_(8);
 
-var _general = require('../utils/general');
+var _general = _dereq_(21);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -429,28 +429,28 @@ if (typeof mejsL10n !== 'undefined') {
 
 exports.default = i18n;
 
-},{"../languages/en":8,"../utils/general":21,"./mejs":6}],5:[function(require,module,exports){
+},{"21":21,"6":6,"8":8}],5:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('./mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
-var _renderer = require('./renderer');
+var _renderer = _dereq_(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -646,10 +646,12 @@ var MediaElement = function MediaElement(idOrNode, options) {
 
 				var capName = '' + propName.substring(0, 1).toUpperCase() + propName.substring(1),
 				    getFn = function getFn() {
-					return t.mediaElement.renderer['get' + capName]();
+					return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null ? t.mediaElement.renderer['get' + capName]() : null;
 				},
 				    setFn = function setFn(value) {
-					t.mediaElement.renderer['set' + capName](value);
+					if (t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null) {
+						t.mediaElement.renderer['set' + capName](value);
+					}
 				};
 
 				addProperty(t.mediaElement, propName, getFn, setFn);
@@ -662,7 +664,7 @@ var MediaElement = function MediaElement(idOrNode, options) {
 	// `src` is a property separated from the others since it carries the logic to set the proper renderer
 	// based on the media files detected
 	getSrc = function getSrc() {
-		return t.mediaElement.renderer.getSrc();
+		return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null ? t.mediaElement.renderer.getSrc() : null;
 	},
 	    setSrc = function setSrc(value) {
 
@@ -720,7 +722,7 @@ var MediaElement = function MediaElement(idOrNode, options) {
 				args[_key] = arguments[_key];
 			}
 
-			return typeof t.mediaElement.renderer[methodName] === 'function' ? t.mediaElement.renderer[methodName](args) : null;
+			return t.mediaElement.renderer !== undefined && t.mediaElement.renderer !== null && typeof t.mediaElement.renderer[methodName] === 'function' ? t.mediaElement.renderer[methodName](args) : null;
 		};
 	};
 
@@ -859,14 +861,14 @@ _window2.default.MediaElement = MediaElement;
 
 exports.default = MediaElement;
 
-},{"../utils/media":22,"./mejs":6,"./renderer":7,"global/document":2,"global/window":3}],6:[function(require,module,exports){
+},{"2":2,"22":22,"3":3,"6":6,"7":7}],6:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -876,7 +878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mejs = {};
 
 // version number
-mejs.version = '3.0.0';
+mejs.version = '3.0.1';
 
 // Basic HTML5 settings
 mejs.html5media = {
@@ -910,7 +912,7 @@ _window2.default.mejs = mejs;
 
 exports.default = mejs;
 
-},{"global/window":3}],7:[function(require,module,exports){
+},{"3":3}],7:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -922,7 +924,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _mejs = require('./mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
@@ -1036,7 +1038,7 @@ var renderer = exports.renderer = new Renderer();
 
 _mejs2.default.Renderers = renderer;
 
-},{"./mejs":6}],8:[function(require,module,exports){
+},{"6":6}],8:[function(_dereq_,module,exports){
 'use strict';
 
 /*!
@@ -1177,28 +1179,28 @@ var EN = exports.EN = {
 	"mejs.yiddish": "Yiddish"
 };
 
-},{}],9:[function(require,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1690,28 +1692,28 @@ _window2.default.dmAsyncInit = function () {
 
 _renderer.renderer.add(DailyMotionIframeRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],10:[function(require,module,exports){
+},{"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],10:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
-var _constants = require('../utils/constants');
+var _constants = _dereq_(19);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1813,10 +1815,10 @@ var NativeDash = {
 };
 
 var DashNativeRenderer = {
-	name: 'native_mdash',
+	name: 'native_dash',
 
 	options: {
-		prefix: 'native_mdash',
+		prefix: 'native_dash',
 		dash: {
 			// Special config: used to set the local path/URL of dash.js mediaplayer library
 			path: '//cdn.dashjs.org/latest/dash.mediaplayer.min.js',
@@ -2018,28 +2020,28 @@ _media.typeChecks.push(function (url) {
 
 _renderer.renderer.add(DashNativeRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/constants":19,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],11:[function(require,module,exports){
+},{"19":19,"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],11:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _general = require('../utils/general');
+var _general = _dereq_(21);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2438,7 +2440,7 @@ _media.typeChecks.push(function (url) {
 
 _renderer.renderer.add(FacebookRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/dom":20,"../utils/general":21,"../utils/media":22,"global/document":2,"global/window":3}],12:[function(require,module,exports){
+},{"2":2,"20":20,"21":21,"22":22,"3":3,"6":6,"7":7}],12:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2448,29 +2450,29 @@ exports.PluginDetector = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _i18n = require('../core/i18n');
+var _i18n = _dereq_(4);
 
 var _i18n2 = _interopRequireDefault(_i18n);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _constants = require('../utils/constants');
+var _constants = _dereq_(19);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2844,9 +2846,9 @@ if (hasFlash) {
 			}
 		} else if (url.includes('.oga') || url.includes('.ogg')) {
 			return 'audio/ogg';
-		} else if (url.includes('.m3u8')) {
+		} else if (!_constants.HAS_MSE && !_constants.SUPPORTS_NATIVE_HLS && url.includes('.m3u8')) {
 			return 'application/x-mpegURL';
-		} else if (url.includes('.mpd')) {
+		} else if (!_constants.HAS_MSE && url.includes('.mpd')) {
 			return 'application/dash+xml';
 		} else {
 			return null;
@@ -2896,7 +2898,7 @@ if (hasFlash) {
    * @return {Boolean}
    */
 		canPlayType: function canPlayType(type) {
-			return hasFlash && ['application/x-mpegurl', 'vnd.apple.mpegurl', 'audio/mpegurl', 'audio/hls', 'video/hls'].includes(type.toLowerCase());
+			return !_constants.HAS_MSE && hasFlash && ['application/x-mpegurl', 'vnd.apple.mpegurl', 'audio/mpegurl', 'audio/hls', 'video/hls'].includes(type.toLowerCase());
 		},
 
 		create: FlashMediaElementRenderer.create
@@ -2905,10 +2907,10 @@ if (hasFlash) {
 
 	// M(PEG)-DASH
 	var FlashMediaElementMdashVideoRenderer = {
-		name: 'flash_mdash',
+		name: 'flash_dash',
 
 		options: {
-			prefix: 'flash_mdash',
+			prefix: 'flash_dash',
 			filename: 'mediaelement-flash-video-mdash.swf'
 		},
 		/**
@@ -2918,7 +2920,7 @@ if (hasFlash) {
    * @return {Boolean}
    */
 		canPlayType: function canPlayType(type) {
-			return hasFlash && ['application/dash+xml'].includes(type);
+			return !_constants.HAS_MSE && hasFlash && ['application/dash+xml'].includes(type);
 		},
 
 		create: FlashMediaElementRenderer.create
@@ -2970,28 +2972,28 @@ if (hasFlash) {
 	_renderer.renderer.add(FlashMediaElementAudioOggRenderer);
 }
 
-},{"../core/i18n":4,"../core/mejs":6,"../core/renderer":7,"../utils/constants":19,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],13:[function(require,module,exports){
+},{"19":19,"2":2,"20":20,"22":22,"3":3,"4":4,"6":6,"7":7}],13:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _constants = require('../utils/constants');
+var _constants = _dereq_(19);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3298,28 +3300,28 @@ _media.typeChecks.push(function (url) {
 
 _renderer.renderer.add(FlvNativeRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/constants":19,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],14:[function(require,module,exports){
+},{"19":19,"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],14:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _constants = require('../utils/constants');
+var _constants = _dereq_(19);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3710,26 +3712,26 @@ _media.typeChecks.push(function (url) {
 
 _renderer.renderer.add(HlsNativeRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/constants":19,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],15:[function(require,module,exports){
+},{"19":19,"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],15:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _constants = require('../utils/constants');
+var _constants = _dereq_(19);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3757,7 +3759,7 @@ var HtmlMediaElement = {
 		var mediaElement = _document2.default.createElement('video');
 
 		// Due to an issue on Webkit, force the MP3 and MP4 on Android and consider native support for HLS
-		if (_constants.IS_ANDROID && type.match(/\/mp(3|4)$/gi) !== null || _constants.SUPPORTS_NATIVE_HLS) {
+		if (_constants.IS_ANDROID && type.match(/\/mp(3|4)$/gi) !== null || ['application/x-mpegurl', 'vnd.apple.mpegurl', 'audio/mpegurl', 'audio/hls', 'video/hls'].includes(type.toLowerCase()) && _constants.SUPPORTS_NATIVE_HLS) {
 			return 'yes';
 		} else if (mediaElement.canPlayType) {
 			return mediaElement.canPlayType(type).replace(/no/, '');
@@ -3866,26 +3868,26 @@ _window2.default.HtmlMediaElement = _mejs2.default.HtmlMediaElement = HtmlMediaE
 
 _renderer.renderer.add(HtmlMediaElement);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/constants":19,"../utils/dom":20,"global/document":2,"global/window":3}],16:[function(require,module,exports){
+},{"19":19,"2":2,"20":20,"3":3,"6":6,"7":7}],16:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4305,26 +4307,26 @@ _media.typeChecks.push(function (url) {
 
 _renderer.renderer.add(SoundCloudIframeRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],17:[function(require,module,exports){
+},{"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],17:[function(_dereq_,module,exports){
 'use strict';
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4853,28 +4855,28 @@ _media.typeChecks.push(function (url) {
 
 _renderer.renderer.add(vimeoIframeRenderer);
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],18:[function(require,module,exports){
+},{"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _renderer = require('../core/renderer');
+var _renderer = _dereq_(7);
 
-var _dom = require('../utils/dom');
+var _dom = _dereq_(20);
 
-var _media = require('../utils/media');
+var _media = _dereq_(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5067,7 +5069,7 @@ var YouTubeIframeRenderer = {
 			showinfo: 0,
 			start: 0,
 			// custom to inject `-nocookie` element in URL
-			nocookie: true
+			nocookie: false
 		}
 	},
 
@@ -5477,7 +5479,7 @@ if (_window2.default.postMessage && _typeof(_window2.default.addEventListener)) 
 	_renderer.renderer.add(YouTubeIframeRenderer);
 }
 
-},{"../core/mejs":6,"../core/renderer":7,"../utils/dom":20,"../utils/media":22,"global/document":2,"global/window":3}],19:[function(require,module,exports){
+},{"2":2,"20":20,"22":22,"3":3,"6":6,"7":7}],19:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5485,15 +5487,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.cancelFullScreen = exports.requestFullScreen = exports.isFullScreen = exports.FULLSCREEN_EVENT_NAME = exports.HAS_NATIVE_FULLSCREEN_ENABLED = exports.HAS_TRUE_NATIVE_FULLSCREEN = exports.HAS_IOS_FULLSCREEN = exports.HAS_MS_NATIVE_FULLSCREEN = exports.HAS_MOZ_NATIVE_FULLSCREEN = exports.HAS_WEBKIT_NATIVE_FULLSCREEN = exports.HAS_NATIVE_FULLSCREEN = exports.SUPPORTS_NATIVE_HLS = exports.SUPPORTS_MEDIA_TAG = exports.SUPPORT_POINTER_EVENTS = exports.HAS_MSE = exports.HAS_TOUCH = exports.IS_STOCK_ANDROID = exports.IS_SAFARI = exports.IS_FIREFOX = exports.IS_CHROME = exports.IS_IE = exports.IS_ANDROID = exports.IS_IOS = exports.IS_IPHONE = exports.IS_IPAD = exports.UA = exports.NAV = undefined;
 
-var _window = require('global/window');
+var _window = _dereq_(3);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
@@ -5668,7 +5670,7 @@ _mejs2.default.Features.isFullScreen = isFullScreen;
 _mejs2.default.Features.requestFullScreen = requestFullScreen;
 _mejs2.default.Features.cancelFullScreen = cancelFullScreen;
 
-},{"../core/mejs":6,"global/document":2,"global/window":3}],20:[function(require,module,exports){
+},{"2":2,"3":3,"6":6}],20:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5679,11 +5681,11 @@ exports.addEvent = addEvent;
 exports.removeEvent = removeEvent;
 exports.isNodeAfter = isNodeAfter;
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
@@ -5765,7 +5767,7 @@ _mejs2.default.Utils.createEvent = createEvent;
 _mejs2.default.Utils.removeEvent = removeEvent;
 _mejs2.default.Utils.isNodeAfter = isNodeAfter;
 
-},{"../core/mejs":6,"global/document":2}],21:[function(require,module,exports){
+},{"2":2,"6":6}],21:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5777,11 +5779,11 @@ exports.isObjectEmpty = isObjectEmpty;
 exports.splitEvents = splitEvents;
 exports.getElementsByClassName = getElementsByClassName;
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
@@ -5922,7 +5924,7 @@ _mejs2.default.Utils.isObjectEmpty = isObjectEmpty;
 _mejs2.default.Utils.splitEvents = splitEvents;
 _mejs2.default.Utils.getElementsByClassName = getElementsByClassName;
 
-},{"../core/mejs":6,"global/document":2}],22:[function(require,module,exports){
+},{"2":2,"6":6}],22:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5936,11 +5938,11 @@ exports.getTypeFromFile = getTypeFromFile;
 exports.getExtension = getExtension;
 exports.normalizeExtension = normalizeExtension;
 
-var _mejs = require('../core/mejs');
+var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
 
-var _general = require('./general');
+var _general = _dereq_(21);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -6092,10 +6094,10 @@ _mejs2.default.Utils.getTypeFromFile = getTypeFromFile;
 _mejs2.default.Utils.getExtension = getExtension;
 _mejs2.default.Utils.normalizeExtension = normalizeExtension;
 
-},{"../core/mejs":6,"./general":21}],23:[function(require,module,exports){
+},{"21":21,"6":6}],23:[function(_dereq_,module,exports){
 'use strict';
 
-var _document = require('global/document');
+var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -6301,4 +6303,4 @@ if (!String.prototype.startsWith) {
 	};
 }
 
-},{"global/document":2}]},{},[23,5,4,8,15,12,9,10,11,13,14,16,17,18]);
+},{"2":2}]},{},[23,5,4,8,15,12,9,10,11,13,14,16,17,18]);
