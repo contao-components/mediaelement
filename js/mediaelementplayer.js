@@ -878,7 +878,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var mejs = {};
 
 // version number
-mejs.version = '3.0.1';
+mejs.version = '3.0.2';
 
 // Basic HTML5 settings
 mejs.html5media = {
@@ -3274,12 +3274,9 @@ Object.assign(_player2.default.prototype, {
 		});
 
 		// MUTE button
-		mute.find('button').click(function () {
+		mute.find('button').on('click', function () {
 			media.setMuted(!media.muted);
-		});
-
-		//Keyboard input
-		mute.find('button').on('focus', function () {
+		}).on('focus', function () {
 			if (mode === 'vertical') {
 				volumeSlider.show();
 			}
@@ -3471,6 +3468,10 @@ var EN = exports.EN = {
 },{}],15:[function(_dereq_,module,exports){
 'use strict';
 
+var _window = _dereq_(3);
+
+var _window2 = _interopRequireDefault(_window);
+
 var _mejs = _dereq_(6);
 
 var _mejs2 = _interopRequireDefault(_mejs);
@@ -3478,9 +3479,9 @@ var _mejs2 = _interopRequireDefault(_mejs);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 if (typeof jQuery !== 'undefined') {
-	_mejs2.default.$ = jQuery;
+	_mejs2.default.$ = _window2.default.jQuery = _window2.default.$ = jQuery;
 } else if (typeof Zepto !== 'undefined') {
-	_mejs2.default.$ = Zepto;
+	_mejs2.default.$ = _window2.default.Zepto = _window2.default.$ = Zepto;
 
 	// define `outerWidth` method which has not been realized in Zepto
 	Zepto.fn.outerWidth = function (includeMargin) {
@@ -3492,10 +3493,10 @@ if (typeof jQuery !== 'undefined') {
 		return width;
 	};
 } else if (typeof ender !== 'undefined') {
-	_mejs2.default.$ = ender;
+	_mejs2.default.$ = _window2.default.ender = _window2.default.$ = ender;
 }
 
-},{"6":6}],16:[function(_dereq_,module,exports){
+},{"3":3,"6":6}],16:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4187,6 +4188,7 @@ var MediaElementPlayer = function () {
 								if (t.options.clickToPlayPause) {
 									var button = t.$media.closest('.' + t.options.classPrefix + 'container').find('.' + t.options.classPrefix + 'overlay-button'),
 									    pressed = button.attr('aria-pressed');
+
 									if (t.media.paused && pressed) {
 										t.pause();
 									} else if (t.media.paused) {
@@ -4201,6 +4203,7 @@ var MediaElementPlayer = function () {
 
 							// click to play/pause
 							t.media.addEventListener('click', t.clickToPlayPauseCallback, false);
+							// t.iframeMouseOver = false;
 
 							// show/hide controls
 							t.container.on('mouseenter', function () {
@@ -4227,6 +4230,19 @@ var MediaElementPlayer = function () {
 									}
 								}
 							});
+							// }).on('mouseover', () => {
+							// 	t.iframeMouseOver = true;
+							// }).on('mouseout', () => {
+							// 	t.iframeMouseOver = false;
+							// });
+							//
+							// const monitor = setInterval(function(){
+							// 	const elem = document.activeElement;
+							// 	if (elem && elem.tagName === 'IFRAME') {
+							// 		t.clickToPlayPauseCallback();
+							// 		clearInterval(monitor);
+							// 	}
+							// }, 50);
 						}
 
 						if (t.options.hideVideoControlsOnLoad) {
