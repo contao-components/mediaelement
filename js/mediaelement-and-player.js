@@ -5501,11 +5501,11 @@ var _player2 = _interopRequireDefault(_player);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 if (typeof jQuery !== 'undefined') {
-	_mejs2.default.$ = _window2.default.jQuery = _window2.default.$ = jQuery;
+	_mejs2.default.$ = jQuery;
 } else if (typeof Zepto !== 'undefined') {
-	_mejs2.default.$ = _window2.default.Zepto = _window2.default.$ = Zepto;
+	_mejs2.default.$ = Zepto;
 } else if (typeof ender !== 'undefined') {
-	_mejs2.default.$ = _window2.default.ender = _window2.default.$ = ender;
+	_mejs2.default.$ = ender;
 }
 
 (function ($) {
