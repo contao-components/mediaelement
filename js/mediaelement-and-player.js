@@ -56,7 +56,7 @@ module.exports = win;
   var setTimeoutFunc = setTimeout;
 
   function noop() {}
-
+  
   // Polyfill for Function.prototype.bind
   function bind(fn, thisArg) {
     return function () {
@@ -274,7 +274,7 @@ module.exports = win;
   Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
     Promise._unhandledRejectionFn = fn;
   };
-
+  
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Promise;
   } else if (!root.Promise) {
@@ -863,7 +863,7 @@ var MediaElement = function MediaElement(idOrNode, options, sources) {
 	},
 	    triggerAction = function triggerAction(methodName, args) {
 		try {
-			if (methodName === 'play' && t.mediaElement.rendererName === 'native_dash') {
+			if (methodName === 'play' && (t.mediaElement.rendererName === 'native_dash' || t.mediaElement.rendererName === 'native_hls')) {
 				var response = t.mediaElement.renderer[methodName](args);
 				if (response && typeof response.then === 'function') {
 					response.catch(function () {
@@ -967,7 +967,7 @@ var MediaElement = function MediaElement(idOrNode, options, sources) {
 		mediaElement.removeAttribute('id');
 		mediaElement.remove();
 		t.mediaElement.remove();
-		wrapper.append(mediaElement);
+		wrapper.appendChild(mediaElement);
 	};
 
 	if (mediaFiles.length) {
@@ -1017,7 +1017,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var mejs = {};
 
-mejs.version = '4.2.11';
+mejs.version = '4.2.12';
 
 mejs.html5media = {
 	properties: ['volume', 'src', 'currentTime', 'muted', 'duration', 'paused', 'ended', 'buffered', 'error', 'networkState', 'readyState', 'seeking', 'seekable', 'currentSrc', 'preload', 'bufferedBytes', 'bufferedTime', 'initialTime', 'startOffsetTime', 'defaultPlaybackRate', 'playbackRate', 'played', 'autoplay', 'loop', 'controls'],
@@ -1554,9 +1554,9 @@ var _document = _dereq_(2);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _player = _dereq_(16);
+var _player2 = _dereq_(16);
 
-var _player2 = _interopRequireDefault(_player);
+var _player3 = _interopRequireDefault(_player2);
 
 var _i18n = _dereq_(5);
 
@@ -1570,7 +1570,7 @@ var _dom = _dereq_(26);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-Object.assign(_player.config, {
+Object.assign(_player2.config, {
 	enableProgressTooltip: true,
 
 	useSmoothHover: true,
@@ -1578,7 +1578,7 @@ Object.assign(_player.config, {
 	forceLive: false
 });
 
-Object.assign(_player2.default.prototype, {
+Object.assign(_player3.default.prototype, {
 	buildprogress: function buildprogress(player, controls, layers, media) {
 
 		var lastKeyPressTime = 0,
@@ -1604,7 +1604,10 @@ Object.assign(_player2.default.prototype, {
 						player.startControlsTimer();
 					}
 
-					player.getElement(player.container).querySelector('.' + _player.config.classPrefix + 'time-total').focus();
+					var timeSlider = player.getElement(player.container).querySelector('.' + _player.config.classPrefix + 'time-total');
+					if (timeSlider) {
+						timeSlider.focus();
+					}
 
 					var newTime = Math.max(player.currentTime - player.options.defaultSeekBackwardInterval(player), 0);
 					player.setCurrentTime(newTime);
@@ -1620,7 +1623,10 @@ Object.assign(_player2.default.prototype, {
 						player.startControlsTimer();
 					}
 
-					player.getElement(player.container).querySelector('.' + _player.config.classPrefix + 'time-total').focus();
+					var timeSlider = player.getElement(player.container).querySelector('.' + _player.config.classPrefix + 'time-total');
+					if (timeSlider) {
+						timeSlider.focus();
+					}
 
 					var newTime = Math.min(player.currentTime + player.options.defaultSeekForwardInterval(player), player.duration);
 					player.setCurrentTime(newTime);
@@ -1767,7 +1773,7 @@ Object.assign(_player2.default.prototype, {
 			if (media.paused) {
 				t.slider.setAttribute('aria-label', timeSliderText);
 				t.slider.setAttribute('aria-valuemin', 0);
-				t.slider.setAttribute('aria-valuemax', duration);
+				t.slider.setAttribute('aria-valuemax', isNaN(duration) ? 0 : duration);
 				t.slider.setAttribute('aria-valuenow', seconds);
 				t.slider.setAttribute('aria-valuetext', time);
 			} else {
@@ -1868,7 +1874,7 @@ Object.assign(_player2.default.prototype, {
 						return;
 				}
 
-				seekTime = seekTime < 0 ? 0 : seekTime >= duration ? duration : Math.floor(seekTime);
+				seekTime = seekTime < 0 || isNaN(seekTime) ? 0 : seekTime >= duration ? duration : Math.floor(seekTime);
 				lastKeyPressTime = new Date();
 				if (!startedPaused) {
 					player.pause();
@@ -3031,7 +3037,7 @@ Object.assign(_player2.default.prototype, {
 			keys: [38],
 			action: function action(player) {
 				var volumeSlider = player.getElement(player.container).querySelector('.' + _player.config.classPrefix + 'volume-slider');
-				if (volumeSlider || player.getElement(player.container).querySelector('.' + _player.config.classPrefix + 'volume-slider').matches(':focus')) {
+				if (volumeSlider && volumeSlider.matches(':focus')) {
 					volumeSlider.style.display = 'block';
 				}
 				if (player.isVideo) {
@@ -3770,7 +3776,7 @@ var MediaElementPlayer = function () {
 									tracks.push(childNode);
 									break;
 								default:
-									cloneNode.appendChild(childNode);
+									cloneNode.appendChild(childNode.cloneNode(true));
 									break;
 							}
 						})();
@@ -4169,7 +4175,7 @@ var MediaElementPlayer = function () {
 								}
 							}, 20);
 						} catch (exp) {
-
+							
 						}
 					}
 
@@ -5666,7 +5672,7 @@ var DashNativeRenderer = {
 							}
 						}
 					} else {
-						node[propName] = value;
+						if (value > 0) node[propName] = value;
 					}
 				}
 			};
@@ -5682,10 +5688,7 @@ var DashNativeRenderer = {
 			var dashEvents = dashjs.MediaPlayer.events,
 			    assignEvents = function assignEvents(eventName) {
 				if (eventName === 'loadedmetadata') {
-					dashPlayer.getDebug().setLogToBrowserConsole(options.dash.debug);
 					dashPlayer.initialize();
-					dashPlayer.setScheduleWhilePaused(false);
-					dashPlayer.setFastSwitchEnabled(true);
 					dashPlayer.attachView(node);
 					dashPlayer.setAutoPlay(false);
 
@@ -5855,7 +5858,7 @@ var PluginDetector = exports.PluginDetector = {
 					version = axDetect(ax);
 				}
 			} catch (e) {
-
+				
 			}
 		}
 		return version;
@@ -5926,7 +5929,7 @@ var FlashMediaElementRenderer = {
 					try {
 						flash.flashApi['set_' + propName](value);
 					} catch (e) {
-
+						
 					}
 				} else {
 					flash.flashApiStack.push({
@@ -5951,10 +5954,10 @@ var FlashMediaElementRenderer = {
 							try {
 								flash.flashApi['fire_' + methodName]();
 							} catch (e) {
-
+								
 							}
 						} else {
-
+							
 						}
 					} else {
 						flash.flashApiStack.push({
@@ -6351,7 +6354,7 @@ var FlvNativeRenderer = {
 							flvPlayer.load();
 						}
 					} else {
-						node[propName] = value;
+						if (value > 0) node[propName] = value;
 					}
 				}
 			};
@@ -6594,7 +6597,7 @@ var HlsNativeRenderer = {
 							hlsPlayer.attachMedia(node);
 						}
 					} else {
-						node[propName] = value;
+						if (value > 0) node[propName] = value;
 					}
 				}
 			};
@@ -6668,12 +6671,12 @@ var HlsNativeRenderer = {
 								hlsPlayer.destroy();
 								break;
 						}
+						return;
 					}
-				} else {
-					var _event = (0, _general.createEvent)(name, mediaElement);
-					_event.data = data;
-					mediaElement.dispatchEvent(_event);
 				}
+				var event = (0, _general.createEvent)(name, mediaElement);
+				event.data = data;
+				mediaElement.dispatchEvent(event);
 			};
 
 			var _loop = function _loop(eventType) {
@@ -6832,7 +6835,7 @@ var HtmlMediaElement = {
 
 			node['set' + capName] = function (value) {
 				if (_mejs2.default.html5media.readOnlyProperties.indexOf(propName) === -1) {
-					node[propName] = value;
+					if (value > 0) node[propName] = value;
 				}
 			};
 		};
@@ -7101,6 +7104,8 @@ var YouTubeIframeRenderer = {
 						case 'volume':
 							volume = youTubeApi.getVolume() / 100;
 							return volume;
+						case 'playbackRate':
+							return youTubeApi.getPlaybackRate();
 						case 'paused':
 							return paused;
 						case 'ended':
@@ -7166,12 +7171,19 @@ var YouTubeIframeRenderer = {
 								mediaElement.dispatchEvent(event);
 							}, 50);
 							break;
+						case 'playbackRate':
+							youTubeApi.setPlaybackRate(value);
+							setTimeout(function () {
+								var event = (0, _general.createEvent)('ratechange', youtube);
+								mediaElement.dispatchEvent(event);
+							}, 50);
+							break;
 						case 'readyState':
 							var event = (0, _general.createEvent)('canplay', youtube);
 							mediaElement.dispatchEvent(event);
 							break;
 						default:
-
+							
 							break;
 					}
 				} else {
